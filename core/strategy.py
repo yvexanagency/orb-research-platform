@@ -5,8 +5,9 @@ class ORBStrategy:
     def run(self, df):
         trades = []
 
-        for date, day in df.groupby(df["timestamp ET"].dt.date):
-            # ORB logic will go here
-            pass
+        grouped = df.groupby(df["timestamp ET"].dt.date)
+
+        for date, day in grouped:
+            print(f"{date} -> {len(day)} candles")
 
         return trades

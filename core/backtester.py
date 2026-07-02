@@ -1,5 +1,6 @@
 from core.strategy import ORBStrategy
 
+
 class Backtester:
     def __init__(self, df, params):
         self.df = df
@@ -7,5 +8,4 @@ class Backtester:
 
     def run(self):
         strategy = ORBStrategy(self.params)
-        trades = strategy.run(self.df)
-        return trades
+        return strategy.run(self.df)
