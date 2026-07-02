@@ -38,13 +38,18 @@ class BacktestResult:
 
     consecutive_wins: int
     consecutive_losses: int
-
-    # Filled in later milestones
+    
     equity_curve: list = field(default_factory=list)
     drawdown_curve: list = field(default_factory=list)
+    drawdown_pct_curve: list = field(default_factory=list)
+
+    final_equity: float = 0.0
+    peak_equity: float = 0.0
 
     max_drawdown: float = 0.0
     max_drawdown_pct: float = 0.0
+
+    # Filled in later milestones
 
     sharpe: float | None = None
     sortino: float | None = None

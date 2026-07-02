@@ -1,3 +1,4 @@
+from core.equity import EquityCurve
 from core.backtest_result import BacktestResult
 
 
@@ -6,6 +7,7 @@ class Metrics:
     def calculate(self, trades):
 
         total_trades = len(trades)
+        equity = EquityCurve().build(trades)
 
         winners = [t for t in trades if t.pnl_dollars > 0]
         losers = [t for t in trades if t.pnl_dollars <= 0]
@@ -78,6 +80,16 @@ class Metrics:
 
         return BacktestResult(
             trades=trades,
+            
+            equity_curve=equity.equity_curve,
+            drawdown_curve=equity.drawdown_curve,
+            drawdown_pct_curve=equity.drawdown_pct_curve,
+
+            final_equity=equity.final_equity,
+            peak_equity=equity.peak_equity,
+
+            max_drawdown=equity.max_drawdown,
+            max_drawdown_pct=equity.max_drawdown_pct,
 
             total_trades=total_trades,
             winners=len(winners),

@@ -49,3 +49,4 @@ print()
 
 print(f"Max Consecutive Wins : {result.consecutive_wins}")
 print(f"Max Consecutive Loss : {result.consecutive_losses}")
+
