@@ -1,8 +1,13 @@
+from core.trade import Trade
+
+
 class ORBStrategy:
+
     def __init__(self, params):
         self.params = params
 
     def run(self, df):
+
         trades = []
 
         or_minutes = self.params["or_minutes"]
@@ -11,7 +16,6 @@ class ORBStrategy:
 
             day = day.reset_index(drop=True)
 
-            # Skip incomplete sessions
             if len(day) < 391:
                 continue
 
@@ -24,26 +28,33 @@ class ORBStrategy:
 
             for _, candle in day.iloc[or_minutes:].iterrows():
 
-                # LONG
-                if not entered and candle["high"] > or_high:
-                    trades.append({
-                        "date": date,
-                        "side": "LONG",
-                        "entry_time": candle["timestamp ET"],
-                        "entry_price": or_high
-                    })
-                    entered = True
+                if entered:
                     break
 
-                # SHORT
-                if not entered and candle["low"] < or_low:
-                    trades.append({
-                        "date": date,
-                        "side": "SHORT",
-                        "entry_time": candle["timestamp ET"],
-                        "entry_price": or_low
-                    })
+                # LONG
+                if candle["high"] > or_high:
+
+                    trade = Trade(
+                        date=date,
+                        side="LONG",
+                        entry_time=candle["timestamp ET"],
+                        entry_price=float(or_high)
+                    )
+
+                    trades.append(trade)
                     entered = True
-                    break
+
+                # SHORT
+                elif candle["low"] < or_low:
+
+                    trade = Trade(
+                        date=date,
+                        side="SHORT",
+                        entry_time=candle["timestamp ET"],
+                        entry_price=float(or_low)
+                    )
+
+                    trades.append(trade)
+                    entered = True
 
         return trades
