@@ -3,12 +3,20 @@ from core.equity_result import EquityResult
 
 class EquityCurve:
 
-    def build(self, trades):
+    def build(self, trades, starting_capital: float = 0.0):
+        """
+        starting_capital shifts every point on the curve by a constant, so
+        it doesn't change $ drawdown, but it fixes % drawdown: measuring
+        against cumulative-PnL-from-zero (the old default) let drawdown %
+        exceed 100% whenever a loss came before the equity curve had built
+        up a meaningful peak. Pass the real starting capital to get a
+        drawdown % that's actually bounded and comparable across runs.
+        """
 
         trades = sorted(trades, key=lambda t: t.exit_time)
 
-        equity = 0.0
-        peak = 0.0
+        equity = starting_capital
+        peak = starting_capital
 
         equity_curve = []
         drawdown_curve = []

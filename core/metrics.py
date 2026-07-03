@@ -12,7 +12,7 @@ class Metrics:
     def calculate(self, trades, starting_capital: float = 100_000.0):
 
         total_trades = len(trades)
-        equity = EquityCurve().build(trades)
+        equity = EquityCurve().build(trades, starting_capital=starting_capital)
 
         winners = [t for t in trades if t.pnl_dollars > 0]
         losers = [t for t in trades if t.pnl_dollars <= 0]
@@ -108,6 +108,8 @@ class Metrics:
 
         monthly_returns, yearly_returns = _monthly_yearly_returns(daily_pnl)
 
+        robustness_score = _robustness_score(profit_factor, calmar)
+
         return BacktestResult(
             trades=trades,
 
@@ -158,6 +160,8 @@ class Metrics:
 
             monthly_returns=monthly_returns,
             yearly_returns=yearly_returns,
+
+            robustness_score=robustness_score,
         )
 
 
@@ -244,6 +248,23 @@ def _ulcer_index(daily_equity):
         dd_pct = (peak - v) / peak * 100 if peak > 0 else 0.0
         squared_dd.append(dd_pct ** 2)
     return math.sqrt(sum(squared_dd) / len(squared_dd))
+
+
+def _robustness_score(profit_factor, calmar):
+    """
+    First-pass composite score: raw edge (profit factor) + drawdown-adjusted
+    return (Calmar), so ranking on this can't reward a strategy for having
+    a great profit factor while quietly taking on brutal drawdowns (or vice
+    versa). Profit factor is capped so a single lucky/thin-sample run with
+    an inflated or infinite PF can't dominate the score.
+
+    This is deliberately simple. It's meant to be replaced by a proper
+    perturbation-based Sensitivity/Robustness Analysis (see ROADMAP.md
+    Phase 5.4) — treat it as "better than optimizing on PF alone", not as
+    a finished robustness methodology.
+    """
+    capped_pf = min(profit_factor, 10.0) if profit_factor != float("inf") else 10.0
+    return capped_pf + (calmar if calmar is not None else 0.0)
 
 
 def _monthly_yearly_returns(daily_pnl):

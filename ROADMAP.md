@@ -173,3 +173,5 @@ Roughly in priority order:
   NOT the real dataset behind the README's "729 trades, $66,760 net
   profit" baseline. Drop your real NQ 1-minute CSV in `data/` before
   drawing conclusions from any run.
+
+
