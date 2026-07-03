@@ -33,7 +33,7 @@ class EquityCurve:
             equity_curve.append(equity)
             drawdown_curve.append(drawdown)
             drawdown_pct_curve.append(drawdown_pct)
-            
+
             if drawdown > max_drawdown:
                 max_drawdown = drawdown
                 max_drawdown_pct = drawdown_pct

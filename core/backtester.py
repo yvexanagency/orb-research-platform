@@ -3,15 +3,16 @@ from core.strategy import ORBStrategy
 
 
 class Backtester:
+    """Coordinates the pipeline. No business logic should live here."""
 
-    def __init__(self, df, params):
+    def __init__(self, df, config):
         self.df = df
-        self.params = params
+        self.config = config
 
     def run(self):
 
-        strategy = ORBStrategy(self.params)
-        simulator = Simulator(self.params)
+        strategy = ORBStrategy(self.config)
+        simulator = Simulator(self.config)
 
         completed_trades = []
 

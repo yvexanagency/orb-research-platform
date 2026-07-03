@@ -4,6 +4,12 @@ A professional quantitative research framework for researching and optimizing Op
 
 This project is designed as a modular quantitative research platform rather than a simple backtester. Every component has a single responsibility and is intended to support large-scale optimization, statistical analysis, robustness testing, and AI-assisted research.
 
+> **Status:** Config system, extended risk-adjusted metrics, entry/risk
+> variety (ATR stops, EMA filters, breakeven, trailing, close-confirm
+> entries), and a working Random Search Optimizer have been added on top
+> of the original baseline. See **[ROADMAP.md](ROADMAP.md)** for what's
+> done, what's next, and known limitations.
+
 ---
 
 # Goals
@@ -76,6 +82,7 @@ Optimizer
 ```
 core/
 
+    config.py
     data_loader.py
     indicators.py
     strategy.py
@@ -90,7 +97,29 @@ core/
     optimizer.py
 
 main.py
+ROADMAP.md
 ```
+
+---
+
+# Quickstart
+
+```bash
+pip install -r requirements.txt
+
+# Single backtest using defaults (data/nq_1m.csv)
+python main.py
+
+# Single backtest with a custom config and data file
+python main.py --config my_config.json --data data/nq_1m.csv
+
+# Random search optimizer
+python main.py --optimize --iterations 200 --rank-metric profit_factor
+```
+
+All tunables now live in `core/config.py` (`BacktestConfig`) instead of a
+hardcoded `PARAMS` dict — see `ROADMAP.md` Phase 1 for details, and
+`BacktestConfig.save()` / `.load()` for persisting a config to JSON.
 
 ---
 
@@ -102,7 +131,7 @@ Responsible for:
 
 - Loading CSV data
 - Parsing timestamps
-- Filtering Regular Trading Hours
+- Filtering Regular Trading Hours (configurable session window)
 - Grouping candles by trading day
 
 ---
@@ -117,11 +146,11 @@ Current indicators:
 - EMA50
 - EMA100
 - EMA200
+- ATR
 
 Future indicators:
 
 - VWAP
-- ATR
 - Volume
 - Daily statistics
 
@@ -134,8 +163,8 @@ Responsible only for detecting entries.
 Responsibilities:
 
 - Compute Opening Range
-- Detect breakout
-- Apply entry rules
+- Detect breakout (or close-confirmed breakout)
+- Apply entry rules (direction, day-of-week, EMA filter, buffer)
 - Return EntrySignal objects
 
 Never manages exits.
@@ -162,8 +191,10 @@ Responsible only for trade execution.
 
 Current features:
 
-- OR Stop
-- 1R Target
+- Configurable Stop: OR Stop / ATR Stop / Fixed Stop
+- Configurable Target: R-Multiple / ATR Target
+- Break-even management
+- ATR-based trailing stop
 - End-of-Day Exit
 - Conservative ambiguous candle handling
 
@@ -207,7 +238,8 @@ Current responsibilities:
 - Compute drawdown
 - Compute drawdown percentage
 
-Future versions will support timestamped equity points.
+`core/metrics.py` additionally builds a calendar-aware daily equity series
+for annualized statistics (Sharpe, CAGR, etc.) — see ROADMAP Phase 3.
 
 ---
 
@@ -236,18 +268,14 @@ Current metrics:
 - Max Loss
 - Consecutive Wins
 - Consecutive Losses
-
-Future metrics:
-
-- CAGR
 - Sharpe Ratio
 - Sortino Ratio
+- CAGR
 - Calmar Ratio
-- Recovery Factor
-- MAR Ratio
 - Ulcer Index
-- Annual Returns
+- Recovery Factor
 - Monthly Returns
+- Yearly Returns
 
 ---
 
@@ -285,19 +313,18 @@ Future modules should consume BacktestResult instead of raw trades whenever poss
 
 ## Optimizer
 
-Not yet implemented.
+Implemented: **Random Search** (`RandomSearchOptimizer` + `ParamSpace`).
 
-Will support:
+Planned (stubbed in code, see ROADMAP Phase 5):
 
-- Random Search
-- Bayesian Optimization
 - Walk Forward
 - Monte Carlo
+- Bayesian Optimization
 - Robustness Ranking
 
 ---
 
-# Current Baseline Results
+# Baseline Results (original dataset)
 
 Dataset:
 
@@ -315,6 +342,10 @@ Current execution model:
 - OR Stop
 - 1R Target
 - End-of-Day Exit
+
+> Note: `data/sample_synthetic.csv` in this repo is randomly generated for
+> pipeline testing only — it does **not** reproduce the numbers above. Use
+> your real NQ 1-minute CSV to reproduce or improve on this baseline.
 
 ---
 
@@ -350,43 +381,40 @@ Only searches parameter space.
 
 # Long-Term Vision
 
-The final platform will support:
+See `ROADMAP.md` for the phased build-out. Summary of remaining scope:
 
 ## Entry
 
-- Opening Range Duration
+- ~~Opening Range Duration~~ ✅
 - Touch Entry
-- Close Entry
-- Entry Buffer
-- Long Only
-- Short Only
-- Both Directions
+- ~~Close Entry~~ ✅ (`close_confirm` mode)
+- ~~Entry Buffer~~ ✅
+- ~~Long Only~~ ✅
+- ~~Short Only~~ ✅
+- ~~Both Directions~~ ✅
 
 ## Filters
 
-- EMA20
-- EMA50
-- EMA100
-- EMA200
+- ~~EMA20/50/100/200~~ ✅
 - VWAP
 - Volume
-- Day of Week
+- ~~Day of Week~~ ✅
 - Trading Session
 - News Filter
 
 ## Risk Management
 
-- OR Stop
-- Fixed Stop
-- ATR Stop
-- Trailing Stop
-- Break Even
+- ~~OR Stop~~ ✅
+- ~~Fixed Stop~~ ✅
+- ~~ATR Stop~~ ✅
+- ~~Trailing Stop~~ ✅
+- ~~Break Even~~ ✅
 - Partial Exits
 - Time Exit
 
 ## Optimization
 
-- Random Search
+- ~~Random Search~~ ✅
 - Bayesian Optimization
 - Walk Forward
 - Monte Carlo
@@ -396,8 +424,8 @@ The final platform will support:
 
 - Equity Curve
 - Drawdown Curve
-- Monthly Returns
-- Annual Returns
+- ~~Monthly Returns~~ ✅ (raw data, no viz yet)
+- ~~Annual Returns~~ ✅ (raw data, no viz yet)
 - Heatmaps
 - Trade Distribution
 - Risk Metrics

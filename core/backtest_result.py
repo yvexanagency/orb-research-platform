@@ -38,7 +38,7 @@ class BacktestResult:
 
     consecutive_wins: int
     consecutive_losses: int
-    
+
     equity_curve: list = field(default_factory=list)
     drawdown_curve: list = field(default_factory=list)
     drawdown_pct_curve: list = field(default_factory=list)
@@ -49,10 +49,14 @@ class BacktestResult:
     max_drawdown: float = 0.0
     max_drawdown_pct: float = 0.0
 
-    # Filled in later milestones
+    starting_capital: float = 100_000.0
 
+    # Risk-adjusted / annualized metrics
     sharpe: float | None = None
     sortino: float | None = None
+    calmar: float | None = None
+    cagr: float | None = None
+    ulcer_index: float | None = None
     recovery_factor: float | None = None
 
     yearly_returns: dict = field(default_factory=dict)
